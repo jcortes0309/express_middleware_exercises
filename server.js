@@ -32,20 +32,6 @@ app.use(function middlewareConsole(request, response, next) {
   next();
 });
 
-function auth(request, response, next) {
-  // show tokens that are in the tokens dictionary
-  console.log("Here are some tokens: ", tokens);
-  // verify the authentication token
-  if (request.query.token in tokens) {
-    next();
-  } else {
-    response.status(401);
-    response.json({
-      error: "You are not logged in... lol"
-    });
-  }
-}
-
 app.post('/login', function(request, response) {
   var username = request.body.username;
   var password = request.body.password;
@@ -68,8 +54,24 @@ app.post('/login', function(request, response) {
   }
 });
 
+// All routes underneath this line will be "forced" to use the auth function
+// Login doesn't need to use the auth function and that's why it's above this line
+app.use(function auth(request, response, next) {
+  // show tokens that are in the tokens dictionary
+  console.log("Here are some tokens: ", tokens);
+  // verify the authentication token
+  if (request.query.token in tokens) {
+    next();
+  } else {
+    response.status(401);
+    response.json({
+      error: "You are not logged in... lol"
+    });
+  }
+});
+
 // Sending a PUT request to the /documents/:filename URL will cause it to be saved in the data subdirectory within your application.
-app.put("/documents/:filename", auth, function(request, response) {
+app.put("/documents/:filename", function(request, response) {
   let filepath = "./data/" + request.params.filename;
   let contents = request.body.contents;
   console.log(contents);
@@ -88,7 +90,7 @@ app.put("/documents/:filename", auth, function(request, response) {
 });
 
 // Sending a GET request to the /documents/:filename URL will return a JSON object containing the title and contents properties
-app.get("/documents/:filename", auth, function(request, response) {
+app.get("/documents/:filename", function(request, response) {
   let filename = request.params.filename;
   fs.readFile("./data/" + filename, function(error, contents) {
     if (error) {
@@ -106,7 +108,7 @@ app.get("/documents/:filename", auth, function(request, response) {
 });
 
 // Sending a GET request to the /documents/:filename/display URL will render an HTML web page containing the result of the markdown page converted into HTML
-app.get("/documents/:filename/display", auth, function(request, response) {
+app.get("/documents/:filename/display", function(request, response) {
   let filename = request.params.filename;
   fs.readFile("./data/" + filename, function(error, contents) {
     if (error) {
@@ -127,7 +129,7 @@ app.get("/documents/:filename/display", auth, function(request, response) {
 });
 
 // ending a GET request to the /documents URL will return an array containing the file paths of the documents that exist (any file in the data subdirectory)
-app.get("/documents", auth, function(request, response) {
+app.get("/documents", function(request, response) {
   let filepath = "./data/";
   fs.readdir(filepath, function(error, files) {
     response.json({
@@ -137,7 +139,7 @@ app.get("/documents", auth, function(request, response) {
 });
 
 // Sending a DELETE request to the /documents/:filename API will remove the corresponding file from the filesystem.
-app.delete('/documents/:filename', auth, function(request, response) {
+app.delete('/documents/:filename', function(request, response) {
   var filename = request.params.filename;
   fs.unlink('./data/' + filename, function(err) {
     if (err) {
