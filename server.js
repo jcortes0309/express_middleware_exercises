@@ -1,21 +1,31 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const marked = require("marked")
+const marked = require("marked");
+const morgan = require("morgan");
 const fs = require("fs");
 
 const app = express();
+// Use body-parser
 app.use(bodyParser.json());
-// Express middleware that will console.log the request method and request path of all requests that call it before delegating back to the regular route handler
-function middlewareConsole(request, response, next) {
+
+// Simple app that will log all requests in the Apache combined format to the file access.log.
+// create a write stream (in append mode)
+var accessLogStream = fs.createWriteStream(__dirname + '/access.log', {flags: 'a'});
+
+// setup the logger
+app.use(morgan('combined', {stream: accessLogStream}));
+
+// Express middleware that will console.log the request method and request path of all requests before delegating back to the regular route handler
+app.use(function middlewareConsole(request, response, next) {
   // prints the request method and path
   console.log("Request method: ", request.method);
   console.log("Request path: ", request.path);
   next();
-}
+});
 
 app.set("view engine", "hbs");
 
-app.put("/documents/:filename", middlewareConsole, function(request, response) {
+app.put("/documents/:filename", function(request, response) {
   let filepath = "./data/" + request.params.filename;
   let contents = request.body.contents;
   console.log(contents);
@@ -33,7 +43,7 @@ app.put("/documents/:filename", middlewareConsole, function(request, response) {
   });
 });
 
-app.get("/documents/:filename", middlewareConsole, function(request, response) {
+app.get("/documents/:filename", function(request, response) {
   let filename = request.params.filename;
   fs.readFile("./data/" + filename, function(error, contents) {
     if (error) {
@@ -50,7 +60,7 @@ app.get("/documents/:filename", middlewareConsole, function(request, response) {
   });
 });
 
-app.get("/documents/:filename/display", middlewareConsole, function(request, response) {
+app.get("/documents/:filename/display", function(request, response) {
   let filename = request.params.filename;
   fs.readFile("./data/" + filename, function(error, contents) {
     if (error) {
@@ -70,7 +80,7 @@ app.get("/documents/:filename/display", middlewareConsole, function(request, res
   });
 });
 
-app.get("/documents", middlewareConsole, function(request, response) {
+app.get("/documents", function(request, response) {
   let filepath = "./data/";
   fs.readdir(filepath, function(error, files) {
     response.json({
@@ -79,7 +89,7 @@ app.get("/documents", middlewareConsole, function(request, response) {
   });
 });
 
-app.delete('/documents/:filename', middlewareConsole, function(request, response) {
+app.delete('/documents/:filename', function(request, response) {
   var filename = request.params.filename;
   fs.unlink('./data/' + filename, function(err) {
     if (err) {
