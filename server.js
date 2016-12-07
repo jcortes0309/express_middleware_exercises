@@ -5,10 +5,17 @@ const fs = require("fs");
 
 const app = express();
 app.use(bodyParser.json());
+// Express middleware that will console.log the request method and request path of all requests that call it before delegating back to the regular route handler
+function middlewareConsole(request, response, next) {
+  // prints the request method and path
+  console.log("Request method: ", request.method);
+  console.log("Request path: ", request.path);
+  next();
+}
 
 app.set("view engine", "hbs");
 
-app.put("/documents/:filename", function(request, response) {
+app.put("/documents/:filename", middlewareConsole, function(request, response) {
   let filepath = "./data/" + request.params.filename;
   let contents = request.body.contents;
   console.log(contents);
@@ -26,7 +33,7 @@ app.put("/documents/:filename", function(request, response) {
   });
 });
 
-app.get("/documents/:filename", function(request, response) {
+app.get("/documents/:filename", middlewareConsole, function(request, response) {
   let filename = request.params.filename;
   fs.readFile("./data/" + filename, function(error, contents) {
     if (error) {
@@ -43,7 +50,7 @@ app.get("/documents/:filename", function(request, response) {
   });
 });
 
-app.get("/documents/:filename/display", function(request, response) {
+app.get("/documents/:filename/display", middlewareConsole, function(request, response) {
   let filename = request.params.filename;
   fs.readFile("./data/" + filename, function(error, contents) {
     if (error) {
@@ -63,7 +70,7 @@ app.get("/documents/:filename/display", function(request, response) {
   });
 });
 
-app.get("/documents", function(request, response) {
+app.get("/documents", middlewareConsole, function(request, response) {
   let filepath = "./data/";
   fs.readdir(filepath, function(error, files) {
     response.json({
@@ -72,7 +79,7 @@ app.get("/documents", function(request, response) {
   });
 });
 
-app.delete('/documents/:filename', function(request, response) {
+app.delete('/documents/:filename', middlewareConsole, function(request, response) {
   var filename = request.params.filename;
   fs.unlink('./data/' + filename, function(err) {
     if (err) {
