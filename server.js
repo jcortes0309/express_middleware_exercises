@@ -32,6 +32,20 @@ app.use(function middlewareConsole(request, response, next) {
   next();
 });
 
+function auth(request, response, next) {
+  // show tokens that are in the tokens dictionary
+  console.log("Here are some tokens: ", tokens);
+  // verify the authentication token
+  if (request.query.token in tokens) {
+    next();
+  } else {
+    response.status(401);
+    response.json({
+      error: "You are not logged in... lol"
+    });
+  }
+}
+
 app.post('/login', function(request, response) {
   var username = request.body.username;
   var password = request.body.password;
@@ -56,19 +70,7 @@ app.post('/login', function(request, response) {
 
 // All routes underneath this line will be "forced" to use the auth function
 // Login doesn't need to use the auth function and that's why it's above this line
-app.use(function auth(request, response, next) {
-  // show tokens that are in the tokens dictionary
-  console.log("Here are some tokens: ", tokens);
-  // verify the authentication token
-  if (request.query.token in tokens) {
-    next();
-  } else {
-    response.status(401);
-    response.json({
-      error: "You are not logged in... lol"
-    });
-  }
-});
+app.use(auth);
 
 // Sending a PUT request to the /documents/:filename URL will cause it to be saved in the data subdirectory within your application.
 app.put("/documents/:filename", function(request, response) {
