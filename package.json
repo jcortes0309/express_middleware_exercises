@@ -1,0 +1,25 @@
+{
+  "name": "markdown_documents_api",
+  "version": "1.0.0",
+  "description": "API for storing markdown documents and rendering the documents as HTML",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jcortes0309/markdown_documents_api.git"
+  },
+  "author": "Juan A Cortes",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jcortes0309/markdown_documents_api/issues"
+  },
+  "homepage": "https://github.com/jcortes0309/markdown_documents_api#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "hbs": "^4.0.1",
+    "marked": "^0.3.6"
+  }
+}
